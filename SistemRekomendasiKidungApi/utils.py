@@ -55,7 +55,7 @@ class TS_SS:
 class Rekomendasi:
     def __init__(self):
         self.soupSongs = pd.read_excel('data/soup.xlsx')
-        self.vectorizer = TfidfVectorizer(norm=None)
+        self.vectorizer = TfidfVectorizer()
         self.tf_idf = self.vectorizer.fit_transform(self.soupSongs['soup'])
         self.tf_idf_query = None
         self.queryuser = ''
