@@ -11,9 +11,9 @@ from nltk.tokenize import word_tokenize
 import re
 
 
+# TS-SS Similarity
 class TS_SS:
-
-    # cosine similarity
+    # Cosine similarity
     def Cosine(self, question_vector, sentence_vector):
         dot_product = np.dot(question_vector, sentence_vector.T)
         denominator = (np.linalg.norm(question_vector) * np.linalg.norm(sentence_vector))
@@ -48,14 +48,15 @@ class TS_SS:
         return math.pi * (ED + MD) ** 2 * theta / 360
 
     # function which is acivated on call
-    def __call__(self, question_vector, sentence_vector):
-        return self.Triangle(question_vector, sentence_vector) * self.Sector(question_vector, sentence_vector)
+    def __call__(self, document1_vector, document2_vector):
+        result = self.Triangle(document1_vector, document2_vector) * self.Sector(document1_vector, document2_vector)
+        return result
 
 
 class Rekomendasi:
     def __init__(self):
         self.soupSongs = pd.read_excel('data/soup.xlsx')
-        self.vectorizer = TfidfVectorizer(norm=None)
+        self.vectorizer = TfidfVectorizer()
         self.tf_idf = self.vectorizer.fit_transform(self.soupSongs['soup'])
         self.tf_idf_query = None
         self.queryuser = ''
@@ -101,7 +102,7 @@ class Rekomendasi:
 
         self.tf_idf_query = self.vectorizer.transform(soupQuerySong['soupQuery'])
 
-    def GetRecomendation(self, query: str, valueSimilarity: bool = False) -> pd.DataFrame:
+    def GetRecomendation(self, query: str, valueSimilarity: bool = False):
         self.queryuser = query
         self.Preprocessing()
 
@@ -109,21 +110,18 @@ class Rekomendasi:
         temp = []
         for idx1, embed1 in enumerate(self.tf_idf):
             temp.append(self.SimilartyTS_SS((embed1).toarray(), (self.tf_idf_query).toarray()).mean())
-            obj_similarityQuery[f'Similarity'] = temp
+            obj_similarityQuery[f'Nilai'] = temp
 
         soupSongs = pd.read_excel('data/soup.xlsx')
         judulLagu = pd.read_excel('data/KoleksiLagu.xlsx')
         df_similarityTS_SS = pd.DataFrame(
             obj_similarityQuery,
-            columns=['Similarity']
+            columns=['Nilai']
         )
-
-        soupSongs['nomor'] = soupSongs['nomor'].apply(lambda x: str(x).capitalize())
-
-        df_similarityTS_SS['Nomor'] = soupSongs['nomor'].tolist()
         df_similarityTS_SS['Judul'] = judulLagu['Judul'].tolist()
+        df_similarityTS_SS['Nomor'] = soupSongs['nomor'].tolist()
 
         if valueSimilarity:
-            return df_similarityTS_SS.sort_values(['Similarity'])[:10]
+            return df_similarityTS_SS.sort_values(['Nilai'])[:10]
         else:
-            return df_similarityTS_SS.sort_values(['Similarity']).index.tolist()[:10]
+            return df_similarityTS_SS['Nilai'].sort_values().index.tolist()[:10]

@@ -27,7 +27,7 @@ def rekomendasi(request, requestBody: Body):
             {
                 'nomor': str(i['Nomor']),
                 'judul': str(i['Judul']),
-                'similarity': "{: 2f}".format(i['Similarity']),
+                'similarity': "{: 2f}".format(i['Nilai']),
             }
         )
     return response
