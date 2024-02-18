@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+import pickle
 from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import swifter
@@ -12,39 +13,39 @@ import re
 
 
 # TS-SS Similarity
-class TS_SS:
+class TS_SS_Similarity:
     # Cosine similarity
-    def Cosine(self, question_vector, sentence_vector):
-        dot_product = np.dot(question_vector, sentence_vector.T)
-        denominator = (np.linalg.norm(question_vector) * np.linalg.norm(sentence_vector))
+    def Cosine(self, document1_vector, document2_vector):
+        dot_product = np.dot(document1_vector, document2_vector.T)
+        denominator = (np.linalg.norm(document1_vector) * np.linalg.norm(document2_vector))
         return dot_product / denominator
 
     # Euclidean distance
-    def Euclidean(self, question_vector, sentence_vector):
-        vec1 = question_vector.copy()
-        vec2 = sentence_vector.copy()
+    def Euclidean(self, document1_vector, document2_vector):
+        vec1 = document1_vector.copy()
+        vec2 = document2_vector.copy()
         if len(vec1) < len(vec2): vec1, vec2 = vec2, vec1
         vec2 = np.resize(vec2, (vec1.shape[0], vec1.shape[1]))
         return np.linalg.norm(vec1 - vec2)
 
     # angle between two vectors
-    def Theta(self, question_vector, sentence_vector):
-        return np.arccos(self.Cosine(question_vector, sentence_vector)) + np.radians(10)
+    def Theta(self, document1_vector, document2_vector):
+        return np.arccos(self.Cosine(document1_vector, document2_vector)) + np.radians(10)
 
     # triangle formed by two vectors and ED as third side
-    def Triangle(self, question_vector, sentence_vector):
-        theta = np.radians(self.Theta(question_vector, sentence_vector))
-        return ((np.linalg.norm(question_vector) * np.linalg.norm(sentence_vector)) * np.sin(theta)) / 2
+    def Triangle(self, document1_vector, document2_vector):
+        theta = np.radians(self.Theta(document1_vector, document2_vector))
+        return ((np.linalg.norm(document1_vector) * np.linalg.norm(document2_vector)) * np.sin(theta)) / 2
 
     # difference in magnitude of two vectors
     def Magnitude_Difference(self, vec1, vec2):
         return abs((np.linalg.norm(vec1) - np.linalg.norm(vec2)))
 
     # sector area similarity
-    def Sector(self, question_vector, sentence_vector):
-        ED = self.Euclidean(question_vector, sentence_vector)
-        MD = self.Magnitude_Difference(question_vector, sentence_vector)
-        theta = self.Theta(question_vector, sentence_vector)
+    def Sector(self, document1_vector, document2_vector):
+        ED = self.Euclidean(document1_vector, document2_vector)
+        MD = self.Magnitude_Difference(document1_vector, document2_vector)
+        theta = self.Theta(document1_vector, document2_vector)
         return math.pi * (ED + MD) ** 2 * theta / 360
 
     # function which is acivated on call
@@ -55,12 +56,21 @@ class TS_SS:
 
 class Rekomendasi:
     def __init__(self):
-        self.soupSongs = pd.read_excel('data/soup.xlsx')
-        self.vectorizer = TfidfVectorizer()
-        self.tf_idf = self.vectorizer.fit_transform(self.soupSongs['soup'])
+        self.vectorizer = self._loadTfIdf_vectorizer()
+        self.tf_idf = self._loadTfIdf_result()
         self.tf_idf_query = None
         self.queryuser = ''
-        self.SimilartyTS_SS = TS_SS()
+        self.SimilartyTS_SS = TS_SS_Similarity()
+
+    def _loadTfIdf_vectorizer(self):
+        with open('data/tfidf_vectorizer.pkl', 'rb') as file:
+            vectorizer = pickle.load(file)
+        return vectorizer
+
+    def _loadTfIdf_result(self):
+        with open('data/tfidf_result.pkl', 'rb') as file:
+            tfidfResult = pickle.load(file)
+        return tfidfResult
 
     def Preprocessing(self):
         soupQuerySong = pd.DataFrame(data={
