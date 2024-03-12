@@ -6,7 +6,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
 from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-import swifter
 
 from nltk.tokenize import word_tokenize
 import re
@@ -105,7 +104,7 @@ class Rekomendasi:
         def get_stemmed_term(document):
             return [stemmer.stem(text=word) for word in document]
 
-        soupQuerySong['soupQuery'] = soupQuerySong['soupQuery'].swifter.apply(get_stemmed_term)
+        soupQuerySong['soupQuery'] = soupQuerySong['soupQuery'].apply(get_stemmed_term)
 
         # mengubah list pada kolom soup menjadi string
         soupQuerySong['soupQuery'] = soupQuerySong['soupQuery'].agg(lambda x: ' '.join(map(str, x)))
