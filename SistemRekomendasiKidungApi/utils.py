@@ -118,8 +118,13 @@ class Rekomendasi:
         obj_similarityQuery = {}
         temp = []
         for idx1, embed1 in enumerate(self.tf_idf):
-            temp.append(self.SimilartyTS_SS((embed1).toarray(), (self.tf_idf_query).toarray()).mean())
-            obj_similarityQuery[f'Nilai'] = temp
+            result = self.SimilartyTS_SS((embed1).toarray(), (self.tf_idf_query).toarray()).mean()
+            temp.append(result)
+
+        max_distance = max(temp)
+        temp_normalized = np.array(temp) / max_distance
+        temp_similarity = 1 - temp_normalized
+        obj_similarityQuery[f'Nilai'] = temp_similarity
 
         soupSongs = pd.read_excel('data/soup.xlsx')
         judulLagu = pd.read_excel('data/KoleksiLagu.xlsx')
@@ -131,6 +136,6 @@ class Rekomendasi:
         df_similarityTS_SS['Nomor'] = soupSongs['nomor'].tolist()
 
         if valueSimilarity:
-            return df_similarityTS_SS.sort_values(['Nilai'])[:10]
+            return df_similarityTS_SS.sort_values(['Nilai'], ascending=False)[:10]
         else:
             return df_similarityTS_SS['Nilai'].sort_values().index.tolist()[:10]
