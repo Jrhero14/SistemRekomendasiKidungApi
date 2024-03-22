@@ -118,13 +118,9 @@ class Rekomendasi:
         obj_similarityQuery = {}
         temp = []
         for idx1, embed1 in enumerate(self.tf_idf):
-            result = self.SimilartyTS_SS((embed1).toarray(), (self.tf_idf_query).toarray()).mean()
+            result = self.SimilartyTS_SS((embed1).toarray(), (self.tf_idf_query).toarray()).mean() * 1500
+            result = 1/(1+result)
             temp.append(result)
-
-        max_distance = max(temp)
-        temp_normalized = np.array(temp) / max_distance
-        temp_similarity = 1 - temp_normalized
-        obj_similarityQuery[f'Nilai'] = temp_similarity
 
         soupSongs = pd.read_excel('data/soup.xlsx')
         judulLagu = pd.read_excel('data/KoleksiLagu.xlsx')
