@@ -122,6 +122,8 @@ class Rekomendasi:
             result = 1/(1+result)
             temp.append(result)
 
+        obj_similarityQuery[f'Nilai'] = temp
+
         soupSongs = pd.read_excel('data/soup.xlsx')
         judulLagu = pd.read_excel('data/KoleksiLagu.xlsx')
         df_similarityTS_SS = pd.DataFrame(
